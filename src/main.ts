@@ -1,5 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
@@ -8,9 +9,9 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle("Cook recipe backend")
     .setDescription("Cook recipe backend API portal")
-    .setVersion("1.0")
-    .addTag("recipes")
+    .setVersion("0.1")
     .build();
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api", app, documentFactory);
 
