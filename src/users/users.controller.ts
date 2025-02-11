@@ -6,16 +6,16 @@ import {
   Param,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
-  ApiTags,
 } from "@nestjs/swagger";
 
-import { AuthGuard } from "@/auth/auth.guard";
+import { JwtAuthGuard } from "@/auth/auth.guard";
 
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -23,7 +23,6 @@ import { UserEntity } from "./entities/user.entity";
 import { UsersService } from "./users.service";
 
 @Controller("users")
-@ApiTags("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -33,17 +32,8 @@ export class UsersController {
     return new UserEntity(await this.usersService.create(createUserDto));
   }
 
-  @Get()
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: UserEntity, isArray: true })
-  async findAll() {
-    const users = await this.usersService.findAll();
-    return users.map((user) => new UserEntity(user));
-  }
-
   @Get(":id")
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
   async findOne(@Param("id") id: string) {
@@ -51,7 +41,7 @@ export class UsersController {
   }
 
   @Patch(":id")
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: UserEntity })
   async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
@@ -59,10 +49,18 @@ export class UsersController {
   }
 
   @Delete(":id")
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
   async remove(@Param("id") id: string) {
     return new UserEntity(await this.usersService.remove(id));
+  }
+
+  @Get("profile")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  getProfile(@Request() req) {
+    console.log(req);
+    return req.user;
   }
 }

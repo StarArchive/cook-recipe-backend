@@ -1,7 +1,11 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
-import { RecipeIngredient, RecipeStep } from "@prisma/client";
+import { RecipeIngredient } from "@prisma/client";
 
 import { RecipeStepEntity } from "../entities/recipe-step.entity";
+
+export class CreateRecipeStepDto extends OmitType(RecipeStepEntity, [
+  "recipeId",
+]) {}
 
 export class CreateRecipeDto {
   @ApiProperty()
@@ -16,6 +20,6 @@ export class CreateRecipeDto {
   @ApiProperty()
   ingredients: RecipeIngredient[];
 
-  @ApiProperty({ type: [OmitType(RecipeStepEntity, ["recipeId"])] })
-  steps: Omit<RecipeStep, "recipeId">[];
+  @ApiProperty({ type: CreateRecipeStepDto, isArray: true })
+  steps: CreateRecipeStepDto[];
 }
