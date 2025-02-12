@@ -3,6 +3,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import bcrypt from "@node-rs/bcrypt";
 
@@ -15,6 +16,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private config: ConfigService,
   ) {}
 
   async login(email: string, password: string): Promise<AuthEntity> {
@@ -31,7 +33,30 @@ export class AuthService {
     }
 
     return {
-      accessToken: this.jwtService.sign({ userId: user.id }),
+      accessToken: this.jwtService.sign({ sub: user.id }),
+    };
+  }
+
+  async register(
+    email: string,
+    password: string,
+    name: string,
+  ): Promise<AuthEntity> {
+    const hashedPassword = await bcrypt.hash(
+      password,
+      this.config.get("USER_PASSWORD_HASH_ROUNDS"),
+    );
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+      },
+    });
+
+    return {
+      accessToken: this.jwtService.sign({ sub: user.id }),
     };
   }
 }
