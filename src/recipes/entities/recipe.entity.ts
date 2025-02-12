@@ -24,7 +24,7 @@ export class RecipeEntity implements Recipe {
   steps: RecipeStepEntity[];
 
   @ApiProperty()
-  authorId: string;
+  authorId: number;
 
   @ApiProperty()
   createdAt: Date;
