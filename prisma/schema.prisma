@@ -22,7 +22,7 @@ model Recipe {
   steps       RecipeStep[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
-  authorId    String
+  authorId    Int
   author      User               @relation(fields: [authorId], references: [id])
 }
 
@@ -39,12 +39,12 @@ model RecipeIngredient {
 model Profile {
   id     Int     @id @default(autoincrement())
   bio    String?
-  userId String  @unique
+  userId Int     @unique
   user   User    @relation(fields: [userId], references: [id])
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   name      String?
   email     String   @unique
   password  String
