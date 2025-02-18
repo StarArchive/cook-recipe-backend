@@ -76,80 +76,75 @@ export class RecipesService {
   }
 
   async update(id: number, updateRecipeDto: UpdateRecipeDto) {
-    // Create a map of ingredient names to quantities for easy lookup
-    const ingredientQuantities = new Map(
-      updateRecipeDto.ingredients?.map((item) => [item.name, item.quantity]),
-    );
+    return this.prisma.$transaction(async (tx) => {
+      const ingredientQuantities = new Map(
+        updateRecipeDto.ingredients?.map((item) => [item.name, item.quantity]),
+      );
 
-    // If ingredients are provided, handle ingredient updates
-    if (updateRecipeDto.ingredients) {
-      // Create any new ingredients that don't exist
-      await this.prisma.ingredient.createMany({
-        data: updateRecipeDto.ingredients.map((ingredient) => ({
-          name: ingredient.name,
-        })),
-        skipDuplicates: true,
-      });
+      if (updateRecipeDto.ingredients) {
+        await tx.ingredient.createMany({
+          data: updateRecipeDto.ingredients.map((ingredient) => ({
+            name: ingredient.name,
+          })),
+          skipDuplicates: true,
+        });
 
-      // Get all ingredients for the recipe
-      const ingredients = await this.prisma.ingredient.findMany({
-        where: {
-          name: {
-            in: updateRecipeDto.ingredients.map(
-              (ingredient) => ingredient.name,
-            ),
-          },
-        },
-        select: {
-          id: true,
-          name: true,
-        },
-      });
-
-      // First delete existing ingredient relations
-      await this.prisma.recipeIngredient.deleteMany({
-        where: {
-          recipeId: id,
-        },
-      });
-
-      // Create new ingredient relations
-      await this.prisma.recipeIngredient.createMany({
-        data: ingredients.map((ingredient) => ({
-          recipeId: id,
-          ingredientId: ingredient.id,
-          quantity: ingredientQuantities.get(ingredient.name),
-        })),
-      });
-    }
-
-    // Update the recipe and its steps
-    const updatedRecipe = await this.prisma.recipe.update({
-      where: { id },
-      data: {
-        title: updateRecipeDto.title,
-        description: updateRecipeDto.description,
-        published: updateRecipeDto.published,
-        ...(updateRecipeDto.steps && {
-          steps: {
-            deleteMany: {},
-            createMany: {
-              data: updateRecipeDto.steps,
+        const ingredients = await tx.ingredient.findMany({
+          where: {
+            name: {
+              in: updateRecipeDto.ingredients.map(
+                (ingredient) => ingredient.name,
+              ),
             },
           },
-        }),
-      },
-      include: {
-        ingredients: {
-          include: {
-            ingredient: true,
+          select: {
+            id: true,
+            name: true,
           },
-        },
-        steps: true,
-      },
-    });
+        });
 
-    return updatedRecipe;
+        await tx.recipeIngredient.deleteMany({
+          where: {
+            recipeId: id,
+          },
+        });
+
+        await tx.recipeIngredient.createMany({
+          data: ingredients.map((ingredient) => ({
+            recipeId: id,
+            ingredientId: ingredient.id,
+            quantity: ingredientQuantities.get(ingredient.name),
+          })),
+        });
+      }
+
+      const updatedRecipe = await tx.recipe.update({
+        where: { id },
+        data: {
+          title: updateRecipeDto.title,
+          description: updateRecipeDto.description,
+          published: updateRecipeDto.published,
+          ...(updateRecipeDto.steps && {
+            steps: {
+              deleteMany: {},
+              createMany: {
+                data: updateRecipeDto.steps,
+              },
+            },
+          }),
+        },
+        include: {
+          ingredients: {
+            include: {
+              ingredient: true,
+            },
+          },
+          steps: true,
+        },
+      });
+
+      return updatedRecipe;
+    });
   }
 
   remove(id: number) {

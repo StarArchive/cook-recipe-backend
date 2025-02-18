@@ -8,11 +8,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-} from "@nestjs/swagger";
+import { ApiBearerAuth } from "@nestjs/swagger";
 import { Role, User as UserStruct } from "@prisma/client";
 
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
@@ -32,13 +28,11 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get("me")
-  @ApiOkResponse({ type: UserEntity })
   async findMe(@User() user: UserStruct) {
     return new UserEntity(user);
   }
 
   @Patch("me")
-  @ApiCreatedResponse({ type: UserEntity })
   async updateMe(
     @Body() updateUserDto: UpdateUserDto,
     @User() user: UserStruct,
@@ -51,7 +45,6 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles([Role.ADMIN])
   @Get(":id")
-  @ApiOkResponse({ type: UserEntity })
   async findOne(@Param("id") id: number) {
     return new UserEntity(await this.usersService.findOne(id));
   }
@@ -59,7 +52,6 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles([Role.ADMIN])
   @Patch(":id")
-  @ApiCreatedResponse({ type: UserEntity })
   async update(@Param("id") id: number, @Body() updateUserDto: UpdateUserDto) {
     return new UserEntity(await this.usersService.update(id, updateUserDto));
   }
