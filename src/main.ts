@@ -15,20 +15,23 @@ async function bootstrap() {
     defaultVersion: "1",
   });
 
-  const config = new DocumentBuilder()
-    .setTitle("Cook recipe backend")
-    .setDescription("Cook recipe backend API portal")
-    .setVersion("v1")
-    .addBearerAuth()
-    .build();
+  if (process.env.NODE_ENV === "development") {
+    const config = new DocumentBuilder()
+      .setTitle("Cook recipe backend")
+      .setDescription("Cook recipe backend API portal")
+      .setVersion("v1")
+      .addBearerAuth()
+      .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, documentFactory);
+    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup("api", app, documentFactory);
+  }
 
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
+      enableDebugMessages: process.env.NODE_ENV === "development",
     }),
   );
 
