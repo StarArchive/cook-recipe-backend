@@ -3,23 +3,26 @@ import { Type } from "class-transformer";
 import {
   IsArray,
   IsBoolean,
-  IsNumber,
+  IsInt,
+  IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
 
 export class CreateRecipeStepDto {
-  @IsNumber()
+  @IsInt()
   @ApiProperty()
   step: number;
 
+  @IsNotEmpty()
   @IsString()
   @ApiProperty()
   content: string;
 }
 
 export class CreateRecipeIngredientDto {
+  @IsNotEmpty()
   @IsString()
   @ApiProperty()
   name: string;
@@ -31,6 +34,7 @@ export class CreateRecipeIngredientDto {
 }
 
 export class CreateRecipeDto {
+  @IsNotEmpty()
   @IsString()
   @ApiProperty()
   title: string;
