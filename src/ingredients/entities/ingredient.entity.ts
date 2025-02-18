@@ -3,7 +3,7 @@ import { Ingredient } from "@prisma/client";
 
 export class IngredientEntity implements Ingredient {
   @ApiProperty()
-  id: string;
+  id: number;
 
   @ApiProperty()
   name: string;
