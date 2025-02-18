@@ -6,19 +6,27 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from "@nestjs/common";
+import { ApiBearerAuth } from "@nestjs/swagger";
+import { User as UserStruct } from "@prisma/client";
+
+import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
+import { User } from "@/user.decorator";
 
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { RecipesService } from "./recipes.service";
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller("recipes")
 export class RecipesController {
   constructor(private readonly recipesService: RecipesService) {}
 
   @Post()
-  create(@Body() createRecipeDto: CreateRecipeDto) {
-    return this.recipesService.create(createRecipeDto);
+  create(@Body() createRecipeDto: CreateRecipeDto, @User() user: UserStruct) {
+    return this.recipesService.create(createRecipeDto, user);
   }
 
   @Get()

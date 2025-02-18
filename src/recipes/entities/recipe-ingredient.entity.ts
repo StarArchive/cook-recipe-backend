@@ -6,7 +6,7 @@ export class RecipeIngredientEntity implements RecipeIngredient {
   recipeId: number;
 
   @ApiProperty()
-  ingredientId: string;
+  ingredientId: number;
 
   @ApiProperty()
   quantity: string | null;
