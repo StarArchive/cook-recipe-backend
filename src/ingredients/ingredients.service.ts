@@ -1,27 +1,64 @@
 import { Injectable } from "@nestjs/common";
+import { Ingredient } from "@prisma/client";
+
+import { PrismaService } from "../prisma/prisma.service";
 
 import { CreateIngredientDto } from "./dto/create-ingredient.dto";
 import { UpdateIngredientDto } from "./dto/update-ingredient.dto";
 
 @Injectable()
 export class IngredientsService {
-  create(createIngredientDto: CreateIngredientDto) {
-    return "This action adds a new ingredient";
+  constructor(private prisma: PrismaService) {}
+
+  async create(createIngredientDto: CreateIngredientDto) {
+    return this.prisma.ingredient.upsert({
+      update: createIngredientDto,
+      create: createIngredientDto,
+      where: createIngredientDto,
+    });
   }
 
-  findAll() {
-    return `This action returns all ingredients`;
+  async createMany(
+    createIngredientDto: CreateIngredientDto[],
+  ): Promise<Ingredient[]> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.ingredient.createMany({
+        data: createIngredientDto,
+        skipDuplicates: true,
+      });
+
+      const createdIngredients = await tx.ingredient.findMany({
+        where: {
+          OR: createIngredientDto.map((dto) => ({
+            ...dto,
+          })),
+        },
+      });
+
+      return createdIngredients;
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} ingredient`;
+  async findAll() {
+    return this.prisma.ingredient.findMany();
   }
 
-  update(id: number, updateIngredientDto: UpdateIngredientDto) {
-    return `This action updates a #${id} ingredient`;
+  async findOne(id: number) {
+    return this.prisma.ingredient.findUnique({
+      where: { id },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} ingredient`;
+  async update(id: number, updateIngredientDto: UpdateIngredientDto) {
+    return this.prisma.ingredient.update({
+      where: { id },
+      data: updateIngredientDto,
+    });
+  }
+
+  async remove(id: number) {
+    return this.prisma.ingredient.delete({
+      where: { id },
+    });
   }
 }
