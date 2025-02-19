@@ -12,6 +12,7 @@ import { ApiBearerAuth } from "@nestjs/swagger";
 import { User as UserStruct } from "@prisma/client";
 
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
+import { Public } from "@/auth/public.decorator";
 import { User } from "@/user.decorator";
 
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
@@ -29,6 +30,7 @@ export class RecipesController {
     return this.recipesService.create(createRecipeDto, user);
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.recipesService.findAll();
