@@ -15,56 +15,56 @@ export class RecipesService {
       createRecipeDto.ingredients.map((item) => [item.name, item.quantity]),
     );
 
-    await this.prisma.ingredient.createManyAndReturn({
-      data: createRecipeDto.ingredients.map((ingredient) => ({
-        name: ingredient.name,
-      })),
-      skipDuplicates: true,
-      select: {
-        id: true,
-        name: true,
-      },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      await tx.ingredient.createMany({
+        data: createRecipeDto.ingredients.map((ingredient) => ({
+          name: ingredient.name,
+        })),
+        skipDuplicates: true,
+      });
 
-    const ingredients = await this.prisma.ingredient.findMany({
-      where: {
-        name: {
-          in: createRecipeDto.ingredients.map((ingredient) => ingredient.name),
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    });
-
-    const createdRecipe = await this.prisma.recipe.create({
-      data: {
-        title: createRecipeDto.title,
-        description: createRecipeDto.description,
-        published: createRecipeDto.published,
-        ingredients: {
-          createMany: {
-            data: ingredients.map((ingredient) => ({
-              ingredientId: ingredient.id,
-              quantity: ingredientQuantities.get(ingredient.name),
-            })),
+      const ingredients = await tx.ingredient.findMany({
+        where: {
+          name: {
+            in: createRecipeDto.ingredients.map(
+              (ingredient) => ingredient.name,
+            ),
           },
         },
-        steps: {
-          createMany: {
-            data: createRecipeDto.steps,
-          },
+        select: {
+          id: true,
+          name: true,
         },
-        author: {
-          connect: {
-            id: user.id,
-          },
-        },
-      },
-    });
+      });
 
-    return createdRecipe;
+      const createdRecipe = await tx.recipe.create({
+        data: {
+          title: createRecipeDto.title,
+          description: createRecipeDto.description,
+          published: createRecipeDto.published,
+          ingredients: {
+            createMany: {
+              data: ingredients.map((ingredient) => ({
+                ingredientId: ingredient.id,
+                quantity: ingredientQuantities.get(ingredient.name),
+              })),
+            },
+          },
+          steps: {
+            createMany: {
+              data: createRecipeDto.steps,
+            },
+          },
+          author: {
+            connect: {
+              id: user.id,
+            },
+          },
+        },
+      });
+
+      return createdRecipe;
+    });
   }
 
   findAll() {
