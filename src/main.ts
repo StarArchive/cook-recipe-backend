@@ -23,7 +23,22 @@ async function bootstrap() {
       .addBearerAuth()
       .build();
 
-    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    const documentFactory = () => {
+      const document = SwaggerModule.createDocument(app, config);
+
+      for (const path of Object.values(document.paths)) {
+        for (const method of Object.values(path)) {
+          if (
+            Array.isArray(method.security) &&
+            method.security.includes("public")
+          ) {
+            method.security = [];
+          }
+        }
+      }
+
+      return document;
+    };
     SwaggerModule.setup("api", app, documentFactory);
   }
 
