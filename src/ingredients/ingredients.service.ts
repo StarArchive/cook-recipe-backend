@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { Ingredient } from "@prisma/client";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -18,9 +17,7 @@ export class IngredientsService {
     });
   }
 
-  async createMany(
-    createIngredientDto: CreateIngredientDto[],
-  ): Promise<Ingredient[]> {
+  async createMany(createIngredientDto: CreateIngredientDto[]) {
     return this.prisma.$transaction(async (tx) => {
       await tx.ingredient.createMany({
         data: createIngredientDto,
