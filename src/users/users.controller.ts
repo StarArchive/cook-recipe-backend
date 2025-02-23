@@ -46,7 +46,10 @@ export class UsersController {
   @Roles([Role.ADMIN])
   @Get(":id")
   async findOne(@Param("id") id: number) {
-    return new UserEntity(await this.usersService.findOne(id));
+    const found = await this.usersService.findOne(id);
+    if (!found) return {};
+
+    return new UserEntity(found);
   }
 
   @UseGuards(RolesGuard)

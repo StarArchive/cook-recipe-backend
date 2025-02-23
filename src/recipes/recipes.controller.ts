@@ -6,13 +6,17 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiBearerAuth } from "@nestjs/swagger";
 import { User as UserStruct } from "@prisma/client";
 
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
 import { Public } from "@/auth/public.decorator";
+import { storage } from "@/storage.config";
 import { User } from "@/user.decorator";
 
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
@@ -36,6 +40,7 @@ export class RecipesController {
     return this.recipesService.findAll();
   }
 
+  @Public()
   @Get(":id")
   findOne(@Param("id") id: number) {
     return this.recipesService.findOne(id);
@@ -49,5 +54,11 @@ export class RecipesController {
   @Delete(":id")
   remove(@Param("id") id: number) {
     return this.recipesService.remove(id);
+  }
+
+  @Post("cover/upload")
+  @UseInterceptors(FileInterceptor("file", { storage }))
+  async upload(@UploadedFile() file: Express.Multer.File) {
+    return file;
   }
 }

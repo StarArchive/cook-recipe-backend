@@ -28,6 +28,12 @@ export class CreateRecipeIngredientDto {
   quantity: string | null;
 }
 
+export class CreateRecipeImageDto {
+  @IsNotEmpty()
+  @IsString()
+  url: string;
+}
+
 export class CreateRecipeDto {
   @IsNotEmpty()
   @IsString()
@@ -49,4 +55,9 @@ export class CreateRecipeDto {
   @ValidateNested({ each: true })
   @Type(() => CreateRecipeStepDto)
   steps: CreateRecipeStepDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateRecipeImageDto)
+  images: CreateRecipeImageDto[];
 }

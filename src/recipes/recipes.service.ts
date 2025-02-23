@@ -60,6 +60,11 @@ export class RecipesService {
               id: user.id,
             },
           },
+          images: {
+            createMany: {
+              data: createRecipeDto.images,
+            },
+          },
         },
       });
 
@@ -68,11 +73,43 @@ export class RecipesService {
   }
 
   findAll() {
-    return this.prisma.recipe.findMany({ where: { published: true } });
+    return this.prisma.recipe.findMany({
+      where: { published: true },
+      include: {
+        images: true,
+      },
+    });
   }
 
   findOne(id: number) {
-    return this.prisma.recipe.findUnique({ where: { id } });
+    return this.prisma.recipe.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+        updatedAt: true,
+        author: { select: { id: true, name: true, roles: true } },
+        ingredients: {
+          select: {
+            quantity: true,
+            ingredient: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        steps: { select: { step: true, content: true } },
+        images: {
+          select: {
+            id: true,
+            url: true,
+          },
+        },
+      },
+    });
   }
 
   async update(id: number, updateRecipeDto: UpdateRecipeDto) {

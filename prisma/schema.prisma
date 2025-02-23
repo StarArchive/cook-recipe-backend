@@ -13,11 +13,19 @@ model Ingredient {
   recipes RecipeIngredient[]
 }
 
+model Image {
+  id       Int    @id @default(autoincrement())
+  url      String
+  recipeId Int
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+}
+
 model Recipe {
   id          Int                @id @default(autoincrement())
   title       String             @db.VarChar(255)
   description String?
   published   Boolean            @default(false)
+  images      Image[]
   ingredients RecipeIngredient[]
   steps       RecipeStep[]
   createdAt   DateTime           @default(now())
@@ -33,7 +41,7 @@ model RecipeIngredient {
   recipe       Recipe     @relation(fields: [recipeId], references: [id])
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
 
-  @@id([recipeId, ingredientId])
+  @@unique([recipeId, ingredientId], map: "recipeId_ingredientId_unique")
 }
 
 model Profile {

@@ -10,7 +10,7 @@ export class UserEntity implements User {
   id: number;
   createdAt: Date;
   updatedAt: Date;
-  name: string;
+  name: string | null;
   email: string;
 
   @Exclude()
