@@ -1,7 +1,8 @@
 import { RecipeStep } from "@prisma/client";
 
 export class RecipeStepEntity implements RecipeStep {
-  step: number;
+  order: number;
   content: string;
+  images: string[];
   recipeId: number;
 }

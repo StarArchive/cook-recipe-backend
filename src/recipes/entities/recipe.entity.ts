@@ -10,6 +10,7 @@ export class RecipeEntity implements Recipe {
   published: boolean = false;
   ingredients: RecipeIngredientEntity[];
   steps: RecipeStepEntity[];
+  images: string[];
   authorId: number;
   createdAt: Date;
   updatedAt: Date;

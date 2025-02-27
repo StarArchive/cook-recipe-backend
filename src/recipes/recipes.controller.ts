@@ -11,7 +11,12 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiBearerAuth } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiResponse,
+} from "@nestjs/swagger";
 import { User as UserStruct } from "@prisma/client";
 
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
@@ -57,8 +62,40 @@ export class RecipesController {
   }
 
   @Post("cover/upload")
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          format: "binary",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: "File uploaded successfully",
+    schema: {
+      type: "object",
+      properties: {
+        fieldname: { type: "string", example: "file" },
+        originalname: { type: "string", example: "recipe-cover.jpg" },
+        encoding: { type: "string", example: "7bit" },
+        mimetype: { type: "string", example: "image/jpeg" },
+        destination: { type: "string", example: "uploads/" },
+        filename: { type: "string", example: "1234567890-recipe-cover.jpg" },
+        path: {
+          type: "string",
+          example: "/uploads/1234567890-recipe-cover.jpg",
+        },
+        size: { type: "number", example: 123456 },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor("file", { storage }))
-  async upload(@UploadedFile() file: Express.Multer.File) {
+  upload(@UploadedFile() file: Express.Multer.File) {
     return file;
   }
 }

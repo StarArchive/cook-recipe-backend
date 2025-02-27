@@ -13,19 +13,12 @@ model Ingredient {
   recipes RecipeIngredient[]
 }
 
-model Image {
-  id       Int    @id @default(autoincrement())
-  url      String
-  recipeId Int
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
-}
-
 model Recipe {
   id          Int                @id @default(autoincrement())
   title       String             @db.VarChar(255)
   description String?
   published   Boolean            @default(false)
-  images      Image[]
+  images      String[]
   ingredients RecipeIngredient[]
   steps       RecipeStep[]
   createdAt   DateTime           @default(now())
@@ -64,12 +57,14 @@ model User {
 }
 
 model RecipeStep {
-  step     Int
-  content  String
   recipeId Int
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  order    Int
+  content  String
 
-  @@id([recipeId, step])
+  images String[]
+  recipe Recipe   @relation(fields: [recipeId], references: [id])
+
+  @@unique([recipeId, order], map: "recipeId_order_unique")
 }
 
 enum Role {

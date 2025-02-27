@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
 import {
+  ArrayUnique,
   IsArray,
   IsBoolean,
   IsInt,
@@ -11,11 +12,16 @@ import {
 
 export class CreateRecipeStepDto {
   @IsInt()
-  step: number;
+  order: number;
 
   @IsNotEmpty()
   @IsString()
   content: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayUnique()
+  images?: string[];
 }
 
 export class CreateRecipeIngredientDto {
@@ -57,7 +63,7 @@ export class CreateRecipeDto {
   steps: CreateRecipeStepDto[];
 
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreateRecipeImageDto)
-  images: CreateRecipeImageDto[];
+  @IsString({ each: true })
+  @ArrayUnique()
+  images?: string[];
 }

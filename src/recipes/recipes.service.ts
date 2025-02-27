@@ -60,11 +60,7 @@ export class RecipesService {
               id: user.id,
             },
           },
-          images: {
-            createMany: {
-              data: createRecipeDto.images,
-            },
-          },
+          images: createRecipeDto.images,
         },
       });
 
@@ -75,9 +71,6 @@ export class RecipesService {
   findAll() {
     return this.prisma.recipe.findMany({
       where: { published: true },
-      include: {
-        images: true,
-      },
     });
   }
 
@@ -101,13 +94,8 @@ export class RecipesService {
             },
           },
         },
-        steps: { select: { step: true, content: true } },
-        images: {
-          select: {
-            id: true,
-            url: true,
-          },
-        },
+        steps: true,
+        images: true,
       },
     });
   }
@@ -185,6 +173,8 @@ export class RecipesService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} recipe`;
+    return this.prisma.recipe.delete({
+      where: { id },
+    });
   }
 }
