@@ -8,9 +8,8 @@ datasource db {
 }
 
 model Ingredient {
-  id      Int                @id @default(autoincrement())
-  name    String             @unique @db.VarChar(255)
-  recipes RecipeIngredient[]
+  id   Int    @id @default(autoincrement())
+  name String @unique @db.VarChar(255)
 }
 
 model Recipe {
@@ -28,13 +27,17 @@ model Recipe {
 }
 
 model RecipeIngredient {
-  recipeId     Int
-  ingredientId Int
-  quantity     String?    @db.VarChar(255)
-  recipe       Recipe     @relation(fields: [recipeId], references: [id])
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  id       Int     @id @default(autoincrement())
+  order    Int
+  type     Int
+  text     String?
+  quantity String?
+  notes    String?
 
-  @@unique([recipeId, ingredientId], map: "recipeId_ingredientId_unique")
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId Int
+
+  @@index([recipeId, order])
 }
 
 model Profile {
