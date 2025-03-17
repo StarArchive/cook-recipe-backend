@@ -16,27 +16,6 @@ export class RecipesService {
     );
 
     return this.prisma.$transaction(async (tx) => {
-      await tx.ingredient.createMany({
-        data: createRecipeDto.ingredients.map((ingredient) => ({
-          name: ingredient.name,
-        })),
-        skipDuplicates: true,
-      });
-
-      const ingredients = await tx.ingredient.findMany({
-        where: {
-          name: {
-            in: createRecipeDto.ingredients.map(
-              (ingredient) => ingredient.name,
-            ),
-          },
-        },
-        select: {
-          id: true,
-          name: true,
-        },
-      });
-
       const createdRecipe = await tx.recipe.create({
         data: {
           title: createRecipeDto.title,
@@ -44,9 +23,10 @@ export class RecipesService {
           published: createRecipeDto.published,
           ingredients: {
             createMany: {
-              data: ingredients.map((ingredient) => ({
-                ingredientId: ingredient.id,
+              data: createRecipeDto.ingredients.map((ingredient, index) => ({
+                name: ingredient.name,
                 quantity: ingredientQuantities.get(ingredient.name),
+                order: index + 1,
               })),
             },
           },
@@ -87,11 +67,10 @@ export class RecipesService {
         ingredients: {
           select: {
             quantity: true,
-            ingredient: {
-              select: {
-                name: true,
-              },
-            },
+            name: true,
+          },
+          orderBy: {
+            order: "asc",
           },
         },
         steps: true,
@@ -135,10 +114,12 @@ export class RecipesService {
         });
 
         await tx.recipeIngredient.createMany({
-          data: ingredients.map((ingredient) => ({
+          data: ingredients.map((ingredient, index) => ({
+            name: ingredient.name,
             recipeId: id,
             ingredientId: ingredient.id,
             quantity: ingredientQuantities.get(ingredient.name),
+            order: index + 1,
           })),
         });
       }
@@ -159,11 +140,7 @@ export class RecipesService {
           }),
         },
         include: {
-          ingredients: {
-            include: {
-              ingredient: true,
-            },
-          },
+          ingredients: true,
           steps: true,
         },
       });

@@ -29,10 +29,8 @@ model Recipe {
 model RecipeIngredient {
   id       Int     @id @default(autoincrement())
   order    Int
-  type     Int
-  text     String?
+  name     String
   quantity String?
-  notes    String?
 
   recipe   Recipe @relation(fields: [recipeId], references: [id])
   recipeId Int

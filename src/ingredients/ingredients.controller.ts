@@ -8,7 +8,7 @@ import {
   Post,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody } from "@nestjs/swagger";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
 
@@ -25,12 +25,6 @@ export class IngredientsController {
   @Post()
   create(@Body() createIngredientDto: CreateIngredientDto) {
     return this.ingredientsService.create(createIngredientDto);
-  }
-
-  @Post("bulk")
-  @ApiBody({ type: [CreateIngredientDto] })
-  createMany(@Body() createIngredientDto: CreateIngredientDto[]) {
-    return this.ingredientsService.createMany(createIngredientDto);
   }
 
   @Get()

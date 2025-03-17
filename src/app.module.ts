@@ -9,6 +9,7 @@ import { AuthModule } from "./auth/auth.module";
 import { IngredientsModule } from "./ingredients/ingredients.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { RecipesModule } from "./recipes/recipes.module";
+import { UploadModule } from "./upload/upload.module";
 import { UsersModule } from "./users/users.module";
 
 @Module({
@@ -21,6 +22,7 @@ import { UsersModule } from "./users/users.module";
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "public"),
     }),
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
