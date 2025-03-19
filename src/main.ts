@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 import { AppModule } from "./app.module";
 import { env } from "./config";
+import { NotFoundInterceptor } from "./not-found.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -50,6 +51,7 @@ async function bootstrap() {
   );
 
   app.enableCors();
+  app.useGlobalInterceptors(new NotFoundInterceptor());
   await app.listen(port);
 }
 bootstrap();

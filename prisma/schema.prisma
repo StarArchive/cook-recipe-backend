@@ -7,9 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Category {
+  id       Int        @id @default(autoincrement())
+  name     String
+  children Category[] @relation("SubCategoryToParentCategory")
+
+  parentId Int?
+  parent   Category? @relation("SubCategoryToParentCategory", fields: [parentId], references: [id])
+
+  recipeIngredient RecipeIngredient[]
+}
+
 model Ingredient {
   id   Int    @id @default(autoincrement())
-  name String @unique @db.VarChar(255)
+  name String @unique
 }
 
 model Recipe {
@@ -22,8 +33,9 @@ model Recipe {
   steps       RecipeStep[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
-  authorId    Int
-  author      User               @relation(fields: [authorId], references: [id])
+
+  authorId Int
+  author   User @relation(fields: [authorId], references: [id])
 }
 
 model RecipeIngredient {
@@ -32,8 +44,11 @@ model RecipeIngredient {
   name     String
   quantity String?
 
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
   recipeId Int
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
 
   @@index([recipeId, order])
 }
@@ -41,13 +56,16 @@ model RecipeIngredient {
 model Profile {
   id     Int     @id @default(autoincrement())
   bio    String?
-  userId Int     @unique
-  user   User    @relation(fields: [userId], references: [id])
+  avatar String?
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
 }
 
 model User {
   id        Int      @id @default(autoincrement())
-  name      String?
+  name      String
+  nickname  String?
   email     String   @unique
   password  String
   roles     Role[]   @default([USER])

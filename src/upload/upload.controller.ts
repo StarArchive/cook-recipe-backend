@@ -1,14 +1,25 @@
 import {
   Controller,
+  HttpStatus,
+  ParseFilePipeBuilder,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiBody, ApiConsumes, ApiResponse } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiResponse,
+} from "@nestjs/swagger";
 
+import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
 import { storage } from "@/storage.config";
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller("upload")
 export class UploadController {
   @Post()
@@ -45,7 +56,18 @@ export class UploadController {
     },
   })
   @UseInterceptors(FileInterceptor("file", { storage }))
-  upload(@UploadedFile() file: Express.Multer.File) {
+  upload(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({
+          maxSize: 1024 * 1024 * 5, // 5MB
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+  ) {
     return file;
   }
 }

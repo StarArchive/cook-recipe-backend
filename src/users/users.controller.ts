@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Patch,
   UseGuards,
@@ -43,19 +44,23 @@ export class UsersController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles([Role.ADMIN])
   @Get(":id")
   async findOne(@Param("id") id: number) {
     const found = await this.usersService.findOne(id);
-    if (!found) return {};
+    if (!found) throw new NotFoundException("User not found");
 
     return new UserEntity(found);
+  }
+
+  @Get(":id/profile")
+  async findUserProfile(@Param("id") id: number) {
+    return this.usersService.findUserProfile(id);
   }
 
   @UseGuards(RolesGuard)
   @Roles([Role.ADMIN])
   @Patch(":id")
   async update(@Param("id") id: number, @Body() updateUserDto: UpdateUserDto) {
-    return new UserEntity(await this.usersService.update(id, updateUserDto));
+    return await this.usersService.update(id, updateUserDto);
   }
 }

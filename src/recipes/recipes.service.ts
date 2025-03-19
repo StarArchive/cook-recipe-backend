@@ -16,6 +16,20 @@ export class RecipesService {
     );
 
     return this.prisma.$transaction(async (tx) => {
+      const categories = await tx.category.findMany({
+        where: {
+          name: {
+            in: createRecipeDto.ingredients.map(
+              (ingredient) => ingredient.name,
+            ),
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+
       const createdRecipe = await tx.recipe.create({
         data: {
           title: createRecipeDto.title,
@@ -27,6 +41,9 @@ export class RecipesService {
                 name: ingredient.name,
                 quantity: ingredientQuantities.get(ingredient.name),
                 order: index + 1,
+                categoryId: categories.find(
+                  (category) => category.name === ingredient.name,
+                )?.id,
               })),
             },
           },
@@ -65,12 +82,12 @@ export class RecipesService {
         updatedAt: true,
         author: { select: { id: true, name: true, roles: true } },
         ingredients: {
-          select: {
-            quantity: true,
-            name: true,
-          },
           orderBy: {
             order: "asc",
+          },
+          omit: {
+            id: true,
+            order: true,
           },
         },
         steps: true,
@@ -85,44 +102,21 @@ export class RecipesService {
         updateRecipeDto.ingredients?.map((item) => [item.name, item.quantity]),
       );
 
-      if (updateRecipeDto.ingredients) {
-        await tx.ingredient.createMany({
-          data: updateRecipeDto.ingredients.map((ingredient) => ({
-            name: ingredient.name,
-          })),
-          skipDuplicates: true,
-        });
-
-        const ingredients = await tx.ingredient.findMany({
-          where: {
-            name: {
-              in: updateRecipeDto.ingredients.map(
-                (ingredient) => ingredient.name,
-              ),
+      const categories = updateRecipeDto.ingredients
+        ? await tx.category.findMany({
+            where: {
+              name: {
+                in: updateRecipeDto.ingredients.map(
+                  (ingredient) => ingredient.name,
+                ),
+              },
             },
-          },
-          select: {
-            id: true,
-            name: true,
-          },
-        });
-
-        await tx.recipeIngredient.deleteMany({
-          where: {
-            recipeId: id,
-          },
-        });
-
-        await tx.recipeIngredient.createMany({
-          data: ingredients.map((ingredient, index) => ({
-            name: ingredient.name,
-            recipeId: id,
-            ingredientId: ingredient.id,
-            quantity: ingredientQuantities.get(ingredient.name),
-            order: index + 1,
-          })),
-        });
-      }
+            select: {
+              id: true,
+              name: true,
+            },
+          })
+        : null;
 
       const updatedRecipe = await tx.recipe.update({
         where: { id },
@@ -130,6 +124,21 @@ export class RecipesService {
           title: updateRecipeDto.title,
           description: updateRecipeDto.description,
           published: updateRecipeDto.published,
+          ...(updateRecipeDto.ingredients && {
+            ingredients: {
+              deleteMany: {},
+              createMany: {
+                data: updateRecipeDto.ingredients.map((ingredient, index) => ({
+                  name: ingredient.name,
+                  quantity: ingredientQuantities.get(ingredient.name),
+                  order: index + 1,
+                  categoryId: categories?.find(
+                    (category) => category.name === ingredient.name,
+                  )?.id,
+                })),
+              },
+            },
+          }),
           ...(updateRecipeDto.steps && {
             steps: {
               deleteMany: {},
@@ -138,6 +147,7 @@ export class RecipesService {
               },
             },
           }),
+          images: updateRecipeDto.images,
         },
         include: {
           ingredients: true,

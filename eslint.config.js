@@ -22,10 +22,7 @@ export const imports = {
           "object",
           "type",
         ],
-        pathGroups: [
-          { group: "builtin", pattern: "vue", position: "before" },
-          { group: "internal", pattern: "{{@,~}/,#}**" },
-        ],
+        pathGroups: [{ group: "internal", pattern: "@/**" }],
         pathGroupsExcludedImportTypes: [],
         "newlines-between": "always",
         alphabetize: {

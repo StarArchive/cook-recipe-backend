@@ -9,5 +9,6 @@ export class RecipeIngredientEntity implements RecipeIngredient {
   order: number;
   name: string;
   recipeId: number;
+  categoryId: number | null;
   quantity: string | null;
 }

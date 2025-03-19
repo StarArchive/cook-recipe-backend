@@ -14,7 +14,15 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
+  findUserProfile(id: number) {
+    return this.prisma.profile.findUnique({
+      where: { userId: id },
+    });
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto) {
+    const { profile, ...userData } = updateUserDto;
+
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(
         updateUserDto.password,
@@ -24,7 +32,23 @@ export class UsersService {
 
     return this.prisma.user.update({
       where: { id },
-      data: updateUserDto,
+      data: {
+        ...userData,
+        ...(profile && {
+          profile: {
+            upsert: {
+              create: profile,
+              update: profile,
+            },
+          },
+        }),
+      },
+      omit: {
+        password: true,
+      },
+      include: {
+        profile: true,
+      },
     });
   }
 
