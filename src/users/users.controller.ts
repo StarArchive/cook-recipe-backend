@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Patch,
+  Post,
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
@@ -17,6 +18,7 @@ import { Roles } from "@/auth/roles.decorator";
 import { RolesGuard } from "@/auth/roles.guard";
 import { User } from "@/user.decorator";
 
+import { ChangeUserPasswordDto } from "./dto/change-user-password.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { UserEntity } from "./entities/user.entity";
 import { UsersService } from "./users.service";
@@ -40,6 +42,20 @@ export class UsersController {
   ) {
     return new UserEntity(
       await this.usersService.update(user.id, updateUserDto),
+    );
+  }
+
+  @Post("me/changePassword")
+  async updatePassword(
+    @Body() changeUserPasswordDto: ChangeUserPasswordDto,
+    @User() user: UserStruct,
+  ) {
+    return new UserEntity(
+      await this.usersService.updatePassword(
+        user,
+        changeUserPasswordDto.oldPassword,
+        changeUserPasswordDto.newPassword,
+      ),
     );
   }
 

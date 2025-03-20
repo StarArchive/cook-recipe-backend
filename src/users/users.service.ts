@@ -1,9 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import bcrypt from "@node-rs/bcrypt";
 
 import { env } from "@/config";
 import { PrismaService } from "@/prisma/prisma.service";
 
+import { User } from "@prisma/client";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
@@ -22,13 +23,6 @@ export class UsersService {
 
   async update(id: number, updateUserDto: UpdateUserDto) {
     const { profile, ...userData } = updateUserDto;
-
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(
-        updateUserDto.password,
-        env.USER_PASSWORD_HASH_ROUNDS,
-      );
-    }
 
     return this.prisma.user.update({
       where: { id },
@@ -54,5 +48,19 @@ export class UsersService {
 
   remove(id: number) {
     return this.prisma.user.delete({ where: { id } });
+  }
+
+  async updatePassword(user: User, oldPassword: string, newPassword: string) {
+    const { id } = user;
+
+    if (!(await bcrypt.verify(oldPassword, user.password)))
+      throw new UnauthorizedException("Old password is incorrect");
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        password: await bcrypt.hash(newPassword, env.USER_PASSWORD_HASH_ROUNDS),
+      },
+    });
   }
 }
