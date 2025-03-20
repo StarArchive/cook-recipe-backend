@@ -65,9 +65,12 @@ export class RecipesService {
     });
   }
 
-  findAll() {
+  findAll(userId?: number) {
     return this.prisma.recipe.findMany({
-      where: { published: true },
+      where: {
+        published: true,
+        ...(Number.isInteger(userId) ? { authorId: userId } : {}),
+      },
     });
   }
 

@@ -6,9 +6,10 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBearerAuth } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { User as UserStruct } from "@prisma/client";
 
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
@@ -32,8 +33,9 @@ export class RecipesController {
 
   @Public()
   @Get()
-  findAll() {
-    return this.recipesService.findAll();
+  @ApiQuery({ name: "userId", required: false, type: Number })
+  findAll(@Query("userId") userId?: number) {
+    return this.recipesService.findAll(userId);
   }
 
   @Public()
