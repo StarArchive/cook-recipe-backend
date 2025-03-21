@@ -73,6 +73,14 @@ export class UsersController {
     return this.usersService.findUserProfile(id);
   }
 
+  @Get(":id/starred")
+  async findUserStarred(
+    @Param("id") id: number,
+    @User() currentUser: UserStruct,
+  ) {
+    return this.usersService.findUserStarred(id, currentUser);
+  }
+
   @UseGuards(RolesGuard)
   @Roles([Role.ADMIN])
   @Patch(":id")

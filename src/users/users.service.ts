@@ -63,4 +63,38 @@ export class UsersService {
       },
     });
   }
+
+  async findUserStarred(userId: number, currentUser: User) {
+    const showPrivate = currentUser.id === userId;
+
+    const starredCollection = await this.prisma.collection.findFirst({
+      where: {
+        userId,
+        isPublic: showPrivate ? undefined : true,
+      },
+    });
+
+    if (!starredCollection) {
+      return { recipes: [] };
+    }
+
+    const starredRecipes = await this.prisma.collectionRecipe.findMany({
+      where: {
+        collectionId: starredCollection.id,
+      },
+      include: {
+        recipe: true,
+      },
+      orderBy: {
+        order: "asc",
+      },
+    });
+
+    return {
+      collection: starredCollection,
+      recipes: starredRecipes.map(
+        (collectionRecipe) => collectionRecipe.recipe,
+      ),
+    };
+  }
 }

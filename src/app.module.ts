@@ -10,6 +10,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { RecipesModule } from "./recipes/recipes.module";
 import { UploadModule } from "./upload/upload.module";
 import { UsersModule } from "./users/users.module";
+import { CollectionsModule } from './collections/collections.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UsersModule } from "./users/users.module";
       rootPath: join(__dirname, "..", "public"),
     }),
     UploadModule,
+    CollectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

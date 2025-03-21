@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { User } from "@prisma/client";
 
 import { PrismaService } from "@/prisma/prisma.service";
@@ -166,5 +166,95 @@ export class RecipesService {
     return this.prisma.recipe.delete({
       where: { id },
     });
+  }
+
+  async toggleStarred(id: number, user: User) {
+    const recipe = await this.prisma.recipe.findUnique({
+      where: { id },
+    });
+
+    if (!recipe) {
+      throw new NotFoundException("Recipe not found");
+    }
+
+    let starredCollection = await this.prisma.collection.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!starredCollection) {
+      starredCollection = await this.prisma.collection.create({
+        data: {
+          name: "默认收藏夹",
+          description: "自动创建的默认收藏夹",
+          isPublic: false,
+          userId: user.id,
+        },
+      });
+    }
+
+    const existingCollectionRecipe =
+      await this.prisma.collectionRecipe.findUnique({
+        where: {
+          collectionId_recipeId: {
+            collectionId: starredCollection.id,
+            recipeId: id,
+          },
+        },
+      });
+
+    if (existingCollectionRecipe) {
+      return this.prisma.collectionRecipe.delete({
+        where: {
+          id: existingCollectionRecipe.id,
+        },
+      });
+    }
+
+    const highestOrder = await this.prisma.collectionRecipe.findFirst({
+      where: {
+        collectionId: starredCollection.id,
+      },
+      orderBy: {
+        order: "desc",
+      },
+      select: {
+        order: true,
+      },
+    });
+
+    const nextOrder = highestOrder ? highestOrder.order + 1 : 1;
+
+    return this.prisma.collectionRecipe.create({
+      data: {
+        collectionId: starredCollection.id,
+        recipeId: id,
+        order: nextOrder,
+      },
+    });
+  }
+
+  async findStarred(id: number, user: User) {
+    const starredCollection = await this.prisma.collection.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!starredCollection) {
+      return { starred: false };
+    }
+
+    const starredRecipe = await this.prisma.collectionRecipe.findUnique({
+      where: {
+        collectionId_recipeId: {
+          collectionId: starredCollection.id,
+          recipeId: id,
+        },
+      },
+    });
+
+    return { starred: !!starredRecipe };
   }
 }

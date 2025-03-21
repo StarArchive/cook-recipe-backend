@@ -17,6 +17,7 @@ import { Public } from "@/auth/public.decorator";
 import { User } from "@/user.decorator";
 
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
+import { StarRecipeDto } from "./dto/star-recipe.dto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { RecipesService } from "./recipes.service";
 
@@ -29,6 +30,16 @@ export class RecipesController {
   @Post()
   create(@Body() createRecipeDto: CreateRecipeDto, @User() user: UserStruct) {
     return this.recipesService.create(createRecipeDto, user);
+  }
+
+  @Post(":id/starred")
+  star(@Param("id") id: number, @User() user: UserStruct) {
+    return this.recipesService.toggleStarred(id, user);
+  }
+
+  @Get(":id/starred")
+  findStarred(@Param("id") id: number, @User() user: UserStruct) {
+    return this.recipesService.findStarred(id, user);
   }
 
   @Public()
