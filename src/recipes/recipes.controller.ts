@@ -17,7 +17,6 @@ import { Public } from "@/auth/public.decorator";
 import { User } from "@/user.decorator";
 
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
-import { StarRecipeDto } from "./dto/star-recipe.dto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { RecipesService } from "./recipes.service";
 
@@ -45,8 +44,19 @@ export class RecipesController {
   @Public()
   @Get()
   @ApiQuery({ name: "userId", required: false, type: Number })
-  findAll(@Query("userId") userId?: number) {
-    return this.recipesService.findAll(userId);
+  @ApiQuery({ name: "categoryId", required: false, type: Number })
+  findAll(
+    @Query("userId") userId?: number,
+    @Query("categoryId") categoryId?: number,
+  ) {
+    return this.recipesService.findAll(userId, categoryId);
+  }
+
+  @Public()
+  @Get("search")
+  @ApiQuery({ name: "query", required: true })
+  search(@Query("query") query: string) {
+    return this.recipesService.search(query);
   }
 
   @Public()

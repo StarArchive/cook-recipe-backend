@@ -65,11 +65,20 @@ export class RecipesService {
     });
   }
 
-  findAll(userId?: number) {
+  findAll(userId?: number, categoryId?: number) {
     return this.prisma.recipe.findMany({
       where: {
         published: true,
         ...(Number.isInteger(userId) ? { authorId: userId } : {}),
+        ...(Number.isInteger(categoryId)
+          ? {
+              ingredients: {
+                some: {
+                  categoryId,
+                },
+              },
+            }
+          : {}),
       },
     });
   }
@@ -83,7 +92,9 @@ export class RecipesService {
         description: true,
         createdAt: true,
         updatedAt: true,
-        author: { select: { id: true, name: true, roles: true } },
+        author: {
+          select: { id: true, name: true, roles: true, profile: true },
+        },
         ingredients: {
           orderBy: {
             order: "asc",
@@ -256,5 +267,17 @@ export class RecipesService {
     });
 
     return { starred: !!starredRecipe };
+  }
+
+  async search(query: string) {
+    return this.prisma.recipe.findMany({
+      where: {
+        title: {
+          contains: query,
+          mode: "insensitive",
+        },
+        published: true,
+      },
+    });
   }
 }

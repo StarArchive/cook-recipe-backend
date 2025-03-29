@@ -30,10 +30,6 @@ export class CollectionsService {
   async findAll(userId?: number) {
     return this.prisma.collection.findMany({
       where: Number.isInteger(userId) ? { userId } : undefined,
-      include: {
-        recipes: true,
-        user: true,
-      },
     });
   }
 
@@ -42,7 +38,6 @@ export class CollectionsService {
       where: { id },
       include: {
         recipes: true,
-        user: true,
       },
     });
 
