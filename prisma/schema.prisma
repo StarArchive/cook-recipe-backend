@@ -87,10 +87,11 @@ model RecipeStep {
 }
 
 model Collection {
-  id          Int     @id @default(autoincrement())
-  name        String  @db.VarChar(100)
+  id          Int            @id @default(autoincrement())
+  name        String         @db.VarChar(100)
   description String?
-  isPublic    Boolean @default(false)
+  isPublic    Boolean        @default(false)
+  type        CollectionType @default(DEFAULT)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,4 +126,9 @@ enum Role {
   USER
   ADMIN
   MODERATOR
+}
+
+enum CollectionType {
+  DEFAULT
+  MANUAL
 }
