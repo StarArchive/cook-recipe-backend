@@ -31,14 +31,9 @@ export class RecipesController {
     return this.recipesService.create(createRecipeDto, user);
   }
 
-  @Post(":id/starred")
-  star(@Param("id") id: number, @User() user: UserStruct) {
-    return this.recipesService.toggleStarred(id, user);
-  }
-
-  @Get(":id/starred")
-  findStarred(@Param("id") id: number, @User() user: UserStruct) {
-    return this.recipesService.findStarred(id, user);
+  @Get("drafts")
+  findDrafts(@User() user: UserStruct) {
+    return this.recipesService.findDrafts(user);
   }
 
   @Public()

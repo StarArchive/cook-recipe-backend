@@ -18,6 +18,7 @@ import { Roles } from "@/auth/roles.decorator";
 import { RolesGuard } from "@/auth/roles.guard";
 import { User } from "@/user.decorator";
 
+import { Public } from "@/auth/public.decorator";
 import { ChangeUserPasswordDto } from "./dto/change-user-password.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { UserEntity } from "./entities/user.entity";
@@ -59,7 +60,7 @@ export class UsersController {
     );
   }
 
-  @UseGuards(RolesGuard)
+  @Public()
   @Get(":id")
   async findOne(@Param("id") id: number) {
     const found = await this.usersService.findOne(id);
@@ -68,17 +69,10 @@ export class UsersController {
     return new UserEntity(found);
   }
 
+  @Public()
   @Get(":id/profile")
   async findUserProfile(@Param("id") id: number) {
     return this.usersService.findUserProfile(id);
-  }
-
-  @Get(":id/starred")
-  async findUserStarred(
-    @Param("id") id: number,
-    @User() currentUser: UserStruct,
-  ) {
-    return this.usersService.findUserStarred(id, currentUser);
   }
 
   @UseGuards(RolesGuard)
