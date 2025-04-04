@@ -14,7 +14,7 @@ export class NotFoundInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap((data) => {
         if (data === null || data === undefined) {
-          throw new NotFoundException("Resource not found");
+          throw new NotFoundException("Resource not found or empty response");
         }
       }),
     );

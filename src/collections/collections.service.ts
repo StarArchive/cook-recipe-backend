@@ -138,9 +138,14 @@ export class CollectionsService {
 
   async remove(id: number) {
     try {
+      await this.prisma.collectionRecipe.deleteMany({
+        where: { collectionId: id },
+      });
       await this.prisma.collection.delete({
         where: { id },
       });
+
+      return { message: "deleted" };
     } catch (error) {
       if (error.code === "P2025") {
         throw new NotFoundException(`Collection with ID ${id} not found`);

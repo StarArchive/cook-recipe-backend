@@ -1,9 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { User } from "@prisma/client";
 
 import { PrismaService } from "@/prisma/prisma.service";
 
-import { User as UserStruct } from "@prisma/client";
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 
@@ -198,6 +197,91 @@ export class RecipesService {
       where: {
         authorId: user.id,
         published: false,
+      },
+    });
+  }
+
+  async addToCollections(
+    user: User,
+    recipeId: number,
+    collectionIds: number[],
+  ) {
+    const recipe = await this.prisma.recipe.findUnique({
+      where: { id: recipeId },
+    });
+
+    if (!recipe) {
+      throw new NotFoundException("Recipe not found");
+    }
+
+    const collectionsByRecipeId = await this.prisma.collection.findMany({
+      where: {
+        recipes: {
+          some: {
+            recipeId,
+          },
+        },
+        userId: user.id,
+      },
+      omit: {
+        userId: true,
+      },
+    });
+
+    const addedCollectionIds = collectionIds.filter(
+      (collectionId) =>
+        !collectionsByRecipeId.some(
+          (collection) => collection.id === collectionId,
+        ),
+    );
+    const deletedCollectionIds = collectionsByRecipeId.filter(
+      (collection) => !collectionIds.includes(collection.id),
+    );
+
+    if (deletedCollectionIds.length > 0) {
+      await this.prisma.collectionRecipe.deleteMany({
+        where: {
+          recipeId,
+          collectionId: {
+            in: deletedCollectionIds.map((collection) => collection.id),
+          },
+        },
+      });
+    }
+
+    if (addedCollectionIds.length > 0) {
+      for (const collectionId of addedCollectionIds) {
+        const lastRecipe = await this.prisma.collectionRecipe.findFirst({
+          where: {
+            recipeId,
+            collectionId,
+          },
+          orderBy: {
+            order: "desc",
+          },
+        });
+
+        await this.prisma.collectionRecipe.create({
+          data: {
+            recipeId,
+            collectionId,
+            order: lastRecipe ? lastRecipe.order + 1 : 1,
+          },
+        });
+      }
+    }
+
+    return this.prisma.collection.findMany({
+      where: {
+        recipes: {
+          some: {
+            recipeId,
+          },
+        },
+        userId: user.id,
+      },
+      omit: {
+        userId: true,
       },
     });
   }

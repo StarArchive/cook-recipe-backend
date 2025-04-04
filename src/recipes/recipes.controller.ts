@@ -17,6 +17,7 @@ import { Public } from "@/auth/public.decorator";
 import { User } from "@/user.decorator";
 
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
+import { AddRecipeToCollectionsDto } from "./dto/add-recipe-to-collections.dto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { RecipesService } from "./recipes.service";
 
@@ -58,6 +59,20 @@ export class RecipesController {
   @Get(":id")
   findOne(@Param("id") id: number) {
     return this.recipesService.findOne(id);
+  }
+
+  @Post(":id/addToCollections")
+  addToCollection(
+    @Param("id") recipeId: number,
+    @Body() addRecipeToCollectionsDto: AddRecipeToCollectionsDto,
+    @User() user: UserStruct,
+  ) {
+    console.log("here");
+    return this.recipesService.addToCollections(
+      user,
+      recipeId,
+      addRecipeToCollectionsDto.collectionIds,
+    );
   }
 
   @Patch(":id")
