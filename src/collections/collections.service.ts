@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { CollectionType } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateCollectionDto } from "./dto/create-collection.dto";
 import { UpdateCollectionDto } from "./dto/update-collection.dto";
@@ -7,16 +8,18 @@ import { UpdateCollectionDto } from "./dto/update-collection.dto";
 export class CollectionsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createCollectionDto: CreateCollectionDto) {
-    const { name, description, userId, recipeIds = [] } = createCollectionDto;
+  async create(createCollectionDto: CreateCollectionDto, userId: number) {
+    const { name, description, recipeIds = [], isPublic } = createCollectionDto;
 
     return this.prisma.collection.create({
       data: {
         name,
         description,
+        type: CollectionType.MANUAL,
         user: {
           connect: { id: userId },
         },
+        isPublic,
         recipes: {
           connect: recipeIds.map((id) => ({ id })),
         },
@@ -27,9 +30,36 @@ export class CollectionsService {
     });
   }
 
-  async findAll(userId?: number) {
+  async findAllByRecipeId(recipeId: number, userId: number) {
     return this.prisma.collection.findMany({
-      where: Number.isInteger(userId) ? { userId } : undefined,
+      where: {
+        recipes: {
+          some: {
+            recipeId,
+          },
+        },
+        userId,
+      },
+      omit: {
+        userId: true,
+      },
+    });
+  }
+
+  async findAll(userId?: number, loggedUserId?: number) {
+    if (!userId && !loggedUserId) {
+      throw new NotFoundException("No user ID provided");
+    }
+    const filterPrivate = userId && userId !== loggedUserId;
+
+    return this.prisma.collection.findMany({
+      where: {
+        userId: userId || loggedUserId,
+        isPublic: filterPrivate ? true : undefined,
+      },
+      omit: {
+        userId: true,
+      },
     });
   }
 
@@ -37,7 +67,19 @@ export class CollectionsService {
     const collection = await this.prisma.collection.findUnique({
       where: { id },
       include: {
-        recipes: true,
+        recipes: {
+          orderBy: {
+            order: "asc",
+          },
+          omit: {
+            order: true,
+            collectionId: true,
+            recipeId: true,
+          },
+          include: {
+            recipe: true,
+          },
+        },
       },
     });
 
@@ -45,7 +87,10 @@ export class CollectionsService {
       throw new NotFoundException(`Collection with ID ${id} not found`);
     }
 
-    return collection;
+    return {
+      ...collection,
+      recipes: collection.recipes.map(({ recipe }) => ({ ...recipe })),
+    };
   }
 
   async update(id: number, updateCollectionDto: UpdateCollectionDto) {

@@ -1,3 +1,6 @@
+import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
+import { Public } from "@/auth/public.decorator";
+import { User } from "@/user.decorator";
 import {
   Body,
   Controller,
@@ -7,31 +10,43 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common";
-import { ApiQuery } from "@nestjs/swagger";
+import { ApiBearerAuth } from "@nestjs/swagger";
+import { User as UserStruct } from "@prisma/client";
 import { CollectionsService } from "./collections.service";
 import { CreateCollectionDto } from "./dto/create-collection.dto";
 import { UpdateCollectionDto } from "./dto/update-collection.dto";
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller("collections")
 export class CollectionsController {
   constructor(private readonly collectionsService: CollectionsService) {}
 
   @Post()
-  create(@Body() createCollectionDto: CreateCollectionDto) {
-    return this.collectionsService.create(createCollectionDto);
+  create(
+    @Body() createCollectionDto: CreateCollectionDto,
+    @User() user: UserStruct,
+  ) {
+    return this.collectionsService.create(createCollectionDto, user.id);
   }
 
+  @Public()
   @Get()
-  @ApiQuery({
-    name: "userId",
-    required: false,
-    type: Number,
-  })
-  findAll(@Query("userId") userId?: number) {
-    return this.collectionsService.findAll(userId);
+  findAll(@Query("userId") userId?: number, @User() loggedUser?: UserStruct) {
+    return this.collectionsService.findAll(userId, loggedUser?.id);
   }
 
+  @Get("recipes/:recipeId")
+  findAllByRecipeId(
+    @Param("recipeId") recipeId: string,
+    @User() user: UserStruct,
+  ) {
+    return this.collectionsService.findAllByRecipeId(+recipeId, user.id);
+  }
+
+  @Public()
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.collectionsService.findOne(+id);

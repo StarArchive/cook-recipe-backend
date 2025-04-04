@@ -1,4 +1,4 @@
-import { Collection } from "@prisma/client";
+import { Collection, CollectionType } from "@prisma/client";
 
 export class CollectionEntity implements Collection {
   id: number;
@@ -8,4 +8,5 @@ export class CollectionEntity implements Collection {
   createdAt: Date;
   updatedAt: Date;
   userId: number;
+  type: CollectionType;
 }

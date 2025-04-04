@@ -1,5 +1,7 @@
+import { CollectionType } from "@prisma/client";
 import {
   IsArray,
+  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -15,9 +17,11 @@ export class CreateCollectionDto {
   @IsString()
   description?: string;
 
-  @IsNotEmpty()
-  @IsNumber()
-  userId: number;
+  @IsBoolean()
+  isPublic: boolean = false;
+
+  @IsString()
+  type: CollectionType = CollectionType.MANUAL;
 
   @IsOptional()
   @IsArray()
