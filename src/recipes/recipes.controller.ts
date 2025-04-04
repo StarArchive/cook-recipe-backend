@@ -67,7 +67,6 @@ export class RecipesController {
     @Body() addRecipeToCollectionsDto: AddRecipeToCollectionsDto,
     @User() user: UserStruct,
   ) {
-    console.log("here");
     return this.recipesService.addToCollections(
       user,
       recipeId,
