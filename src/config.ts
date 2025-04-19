@@ -16,6 +16,7 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default("2d"),
   USER_PASSWORD_HASH_ROUNDS: z.coerce.number().default(10),
   UPLOAD_PATH: z.string().default("public/uploads"),
+  OPENAI_API_KEY: z.string().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

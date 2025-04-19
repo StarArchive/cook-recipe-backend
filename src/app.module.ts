@@ -7,6 +7,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { CategoriesModule } from "./categories/categories.module";
+import { ChatModule } from "./chat/chat.module";
 import { CollectionsModule } from "./collections/collections.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { RecipesModule } from "./recipes/recipes.module";
@@ -25,6 +26,7 @@ import { UsersModule } from "./users/users.module";
     UploadModule,
     CollectionsModule,
     CategoriesModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
