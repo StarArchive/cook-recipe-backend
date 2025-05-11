@@ -16,6 +16,7 @@ model Category {
   parent   Category? @relation("SubCategoryToParentCategory", fields: [parentId], references: [id])
 
   recipeIngredient RecipeIngredient[]
+  recipes          Recipe[]
 }
 
 model Recipe {
@@ -33,6 +34,7 @@ model Recipe {
   ingredients       RecipeIngredient[]
   steps             RecipeStep[]
   collectionRecipes CollectionRecipe[]
+  categories        Category[]
 }
 
 model RecipeIngredient {

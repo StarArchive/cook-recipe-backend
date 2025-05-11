@@ -58,6 +58,11 @@ export class RecipesService {
             },
           },
           images: createRecipeDto.images,
+          categories: {
+            connect: createRecipeDto.categoryIds?.map((id) => ({
+              id,
+            })),
+          },
         },
       });
 
@@ -72,11 +77,22 @@ export class RecipesService {
         ...(Number.isInteger(userId) ? { authorId: userId } : {}),
         ...(Number.isInteger(categoryId)
           ? {
-              ingredients: {
-                some: {
-                  categoryId,
+              OR: [
+                {
+                  ingredients: {
+                    some: {
+                      categoryId,
+                    },
+                  },
                 },
-              },
+                {
+                  categories: {
+                    some: {
+                      id: categoryId,
+                    },
+                  },
+                },
+              ],
             }
           : {}),
       },
@@ -107,6 +123,12 @@ export class RecipesService {
         published: true,
         steps: true,
         images: true,
+        categories: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
   }
@@ -163,10 +185,18 @@ export class RecipesService {
             },
           }),
           images: updateRecipeDto.images,
+          ...(updateRecipeDto.categoryIds && {
+            categories: {
+              set: updateRecipeDto.categoryIds.map((id) => ({
+                id,
+              })),
+            },
+          }),
         },
         include: {
           ingredients: true,
           steps: true,
+          categories: true,
         },
       });
 

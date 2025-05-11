@@ -66,4 +66,9 @@ export class CreateRecipeDto {
   @IsString({ each: true })
   @ArrayUnique()
   images?: string[];
+
+  @IsArray()
+  @IsInt({ each: true })
+  @ArrayUnique()
+  categoryIds?: number[];
 }

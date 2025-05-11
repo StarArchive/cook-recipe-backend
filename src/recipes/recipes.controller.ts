@@ -16,8 +16,8 @@ import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
 import { Public } from "@/auth/public.decorator";
 import { User } from "@/user.decorator";
 
-import { CreateRecipeDto } from "./dto/create-recipe.dto";
 import { AddRecipeToCollectionsDto } from "./dto/add-recipe-to-collections.dto";
+import { CreateRecipeDto } from "./dto/create-recipe.dto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { RecipesService } from "./recipes.service";
 
