@@ -44,8 +44,9 @@ export class RecipesController {
   findAll(
     @Query("userId") userId?: number,
     @Query("categoryId") categoryId?: number,
+    @User() user?: UserStruct,
   ) {
-    return this.recipesService.findAll(userId, categoryId);
+    return this.recipesService.findAll(userId, categoryId, user);
   }
 
   @Public()

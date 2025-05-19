@@ -70,10 +70,10 @@ export class RecipesService {
     });
   }
 
-  findAll(userId?: number, categoryId?: number) {
+  findAll(userId?: number, categoryId?: number, user?: User) {
     return this.prisma.recipe.findMany({
       where: {
-        published: true,
+        ...(userId !== user?.id ? { published: true } : {}),
         ...(Number.isInteger(userId) ? { authorId: userId } : {}),
         ...(Number.isInteger(categoryId)
           ? {
