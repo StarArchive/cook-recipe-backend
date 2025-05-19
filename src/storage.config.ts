@@ -5,7 +5,7 @@ import { diskStorage } from "multer";
 import { env } from "./config";
 
 function generateFilename(file: Express.Multer.File) {
-  return `${Date.now()}${extname(file.originalname)}`;
+  return `${Date.now()}-${file.size}${extname(file.originalname)}`;
 }
 
 export const storage = diskStorage({
