@@ -71,9 +71,12 @@ export class RecipesService {
   }
 
   findAll(userId?: number, categoryId?: number, user?: User) {
+    const isCurrentUser = userId && userId === user?.id;
+    const published = isCurrentUser ? undefined : true;
+
     return this.prisma.recipe.findMany({
       where: {
-        ...(userId !== user?.id ? { published: true } : {}),
+        published,
         ...(Number.isInteger(userId) ? { authorId: userId } : {}),
         ...(Number.isInteger(categoryId)
           ? {
